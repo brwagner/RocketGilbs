@@ -20,18 +20,22 @@ import java.io.IOException;
 
 import org.lwjgl.opengl.Display;
 
-
+/**
+ * Loads the shaders from their respective files into OpenGL. This class reads
+ * the fragment and vertex shaders line by line into a stringbuilder and then
+ * compiles it into OpenGL and writes any exceptions to the console
+ */
 public class ShaderLoader
 {
-	int shaderProgram;
-	int vertexShader;
-	int fragmentShader;
-	StringBuilder vertexShaderSource;
-	StringBuilder fragmentShaderSource;
-	String fileName;
-	Settings settings;
+	int shaderProgram; // Used to identify the program in OpenGL
+	int vertexShader; // Used to identify the vertex shader
+	int fragmentShader; // Used to identify the fragment shader
+	StringBuilder vertexShaderSource; // Generated from shader.vert
+	StringBuilder fragmentShaderSource; // Generated from shader.frag
+	String fileName; // The file name of the shaders
+	Settings settings; // Performance tweaks injected into source code
 
-	@SuppressWarnings("deprecation")
+	// Constructor
 	public ShaderLoader(String fileName, int settings)
 	{
 		this.fileName = fileName;
@@ -42,6 +46,15 @@ public class ShaderLoader
 		this.fragmentShaderSource = new StringBuilder();
 		this.settings = new Settings(settings);
 		
+		readVertexShader(fileName);
+		readFragmentShader(fileName);
+
+		compileVertexShader();
+		compileFragmentShader();
+	}
+
+	// Reads vertex shader from source into stringbuilder
+	private void readVertexShader(String fileName) {
 		try
 		{
 			BufferedReader reader = new BufferedReader(new FileReader("src/" + fileName + ".vert"));
@@ -58,7 +71,10 @@ public class ShaderLoader
 			Display.destroy();
 			System.exit(1);
 		}
-
+	}
+	
+	// Reads fragment shader from source into stringbuilder
+	private void readFragmentShader(String fileName) {
 		try
 		{
 			BufferedReader reader = new BufferedReader(new FileReader("src/" + fileName + ".frag"));
@@ -77,7 +93,10 @@ public class ShaderLoader
 			Display.destroy();
 			System.exit(1);
 		}
-
+	}
+	
+	@SuppressWarnings("deprecation") // Compile the vertex shader
+	private void compileVertexShader() {
 		glShaderSource(vertexShader, vertexShaderSource);
 		glCompileShader(vertexShader);
 		
@@ -88,7 +107,10 @@ public class ShaderLoader
 
 		glShaderSource(fragmentShader, fragmentShaderSource);
 		glCompileShader(fragmentShader);
-		
+	}
+	
+	@SuppressWarnings("deprecation") // Compile the fragment shader
+	private void compileFragmentShader() {
 		if (glGetShader(fragmentShader, GL_COMPILE_STATUS) == GL_FALSE)
 		{
 			System.err.println("Fragment shader wasn't able to be compiled correctly");
@@ -100,6 +122,10 @@ public class ShaderLoader
 		glLinkProgram(shaderProgram);
 		glValidateProgram(shaderProgram);
 	}
+
+////////////////////////////////////////////////////////////////////////////////
+//                        Accessors and Mutators
+////////////////////////////////////////////////////////////////////////////////
 	
 	public int getShaderProgram() {
 		return shaderProgram;

@@ -1,4 +1,5 @@
 package util;
+
 // Copyright 2014 Benjamin Wagner using a GPL license
 
 import gameobject.Collectable;
@@ -9,47 +10,48 @@ import java.util.ArrayList;
 
 import main.LevelState;
 
-public class Leveler
-{
+/**
+ * A Factory for the different LevelStates used in each level
+ */
+public class Leveler {
 	static final int MAX_X = 1280;
 	static final int MAX_Y = 720;
-	static final int MID_X = MAX_X/2;
-	static final int MID_Y = MAX_Y/2;
-	static final int EIGHTH1_X = MAX_X/8;
-	static final int EIGHTH2_X = EIGHTH1_X*2;
-	static final int EIGHTH3_X = EIGHTH1_X*3;
-	static final int EIGHTH4_X = EIGHTH1_X*4;
-	static final int EIGHTH5_X = EIGHTH1_X*5;
-	static final int EIGHTH6_X = EIGHTH1_X*6;
-	static final int EIGHTH7_X = EIGHTH1_X*7;
-	static final int QUART1_X = MAX_X/4;
-	static final int QUART2_X = QUART1_X*2;
-	static final int QUART3_X = QUART1_X*3;
-	static final int THIRD1_X = MAX_X/3;
-	static final int THIRD2_X = THIRD1_X*2;
-	static final int THIRD3_X = THIRD1_X*3;
-	static final int EIGHTH1_Y = MAX_Y/8;
-	static final int EIGHTH2_Y = EIGHTH1_Y*2;
-	static final int EIGHTH3_Y = EIGHTH1_Y*3;
-	static final int EIGHTH4_Y = EIGHTH1_Y*4;
-	static final int EIGHTH5_Y = EIGHTH1_Y*5;
-	static final int EIGHTH6_Y = EIGHTH1_Y*6;
-	static final int EIGHTH7_Y = EIGHTH1_Y*7;
-	static final int QUART1_Y = MAX_Y/4;
-	static final int QUART2_Y = QUART1_Y*2;
-	static final int QUART3_Y = QUART1_Y*3;
-	static final int THIRD1_Y = MAX_Y/3;
-	static final int THIRD2_Y = THIRD1_Y*2;
-	static final int THIRD3_Y = THIRD1_Y*3;
-	
-	public static LevelState getLevel(int level)
-	{
+	static final int MID_X = MAX_X / 2;
+	static final int MID_Y = MAX_Y / 2;
+	static final int EIGHTH1_X = MAX_X / 8;
+	static final int EIGHTH2_X = EIGHTH1_X * 2;
+	static final int EIGHTH3_X = EIGHTH1_X * 3;
+	static final int EIGHTH4_X = EIGHTH1_X * 4;
+	static final int EIGHTH5_X = EIGHTH1_X * 5;
+	static final int EIGHTH6_X = EIGHTH1_X * 6;
+	static final int EIGHTH7_X = EIGHTH1_X * 7;
+	static final int QUART1_X = MAX_X / 4;
+	static final int QUART2_X = QUART1_X * 2;
+	static final int QUART3_X = QUART1_X * 3;
+	static final int THIRD1_X = MAX_X / 3;
+	static final int THIRD2_X = THIRD1_X * 2;
+	static final int THIRD3_X = THIRD1_X * 3;
+	static final int EIGHTH1_Y = MAX_Y / 8;
+	static final int EIGHTH2_Y = EIGHTH1_Y * 2;
+	static final int EIGHTH3_Y = EIGHTH1_Y * 3;
+	static final int EIGHTH4_Y = EIGHTH1_Y * 4;
+	static final int EIGHTH5_Y = EIGHTH1_Y * 5;
+	static final int EIGHTH6_Y = EIGHTH1_Y * 6;
+	static final int EIGHTH7_Y = EIGHTH1_Y * 7;
+	static final int QUART1_Y = MAX_Y / 4;
+	static final int QUART2_Y = QUART1_Y * 2;
+	static final int QUART3_Y = QUART1_Y * 3;
+	static final int THIRD1_Y = MAX_Y / 3;
+	static final int THIRD2_Y = THIRD1_Y * 2;
+	static final int THIRD3_Y = THIRD1_Y * 3;
+
+	// Returns the specified level
+	public static LevelState getLevel(int level) {
 		Gilbert gilbs;
 		ArrayList<Planet> planetsArray;
 		Collectable collect;
-		
-		switch(level)
-		{	
+
+		switch (level) {
 		case 1:
 			// gilbert
 			gilbs = new Gilbert(800, 600, -1, 0, 0, 0);
@@ -138,14 +140,13 @@ public class Leveler
 			return new LevelState(gilbs, planetsArray, collect);
 		case 7:
 			// gilbert
-			gilbs = new Gilbert(MID_X + 150, MID_Y +10, 2, 3, 0, 0);
+			gilbs = new Gilbert(MID_X + 150, MID_Y + 10, 2, 3, 0, 0);
 
 			// planets array
 			planetsArray = new ArrayList<Planet>();
 
-			for(float t = 0.0f; t < 2.0f * Math.PI; t += Math.PI * 0.25f)
-			{
-				planetsArray.add(new Planet((float)(MID_X + THIRD1_Y * Math.sin(t)), (float)(MID_Y + THIRD1_Y * Math.cos(t)), 500.0f, 50.0f));
+			for (float t = 0.0f; t < 2.0f * Math.PI; t += Math.PI * 0.25f) {
+				planetsArray.add(new Planet((float) (MID_X + THIRD1_Y * Math.sin(t)), (float) (MID_Y + THIRD1_Y * Math.cos(t)), 500.0f, 50.0f));
 			}
 
 			planetsArray.remove(0);
@@ -169,7 +170,8 @@ public class Leveler
 			collect = new Collectable(Collectable.makePoints(EIGHTH3_X, MID_Y, MID_X, EIGHTH3_Y, EIGHTH5_X, MID_Y, MID_X, EIGHTH5_Y));
 
 			return new LevelState(gilbs, planetsArray, collect);
-		default : return null;
+		default:
+			return null;
 		}
 	}
 

@@ -14,26 +14,27 @@ import org.lwjgl.input.Keyboard;
 import util.Saver;
 import util.SimpleText;
 
+/**
+ * The main menu. This class is a mess and really should use some kind of state
+ * machine instead of what i'm doing now.
+ */
 public class Menu {
 	ArrayList<String> currentOptions;
 	String[] menuOptions = { "Continue", "Level Select", "Settings" };
 	String[] settingsOptions = { "No Stars", "Some Stars", "More Stars", "Lots of Stars" };
 	String[] levelOptions;
 	float time;
-	int highlighted;
+	int selected;
 	int menuState;
-	Saver saver;
 
-	public Menu(Saver saver) {
+	public Menu() {
 		this.menuState = -1;
-		this.highlighted = 0;
+		this.selected = 0;
 		this.time = 0;
 		this.currentOptions = new ArrayList<String>(Arrays.asList(this.menuOptions));
-		this.saver = saver;
 
-		this.levelOptions = new String[this.saver.getMaxLevel()];
-
-		for (int i = 0; i < this.saver.getMaxLevel(); i++) {
+		this.levelOptions = new String[Saver.getInstance().getMaxLevel()];
+		for (int i = 0; i < Saver.getInstance().getMaxLevel(); i++) {
 			this.levelOptions[i] = "Level: " + Integer.valueOf(i + 1);
 		}
 	}
@@ -45,9 +46,9 @@ public class Menu {
 		case -1:
 			this.currentOptions = new ArrayList<String>(Arrays.asList(this.menuOptions));
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
-				this.menuState = this.highlighted;
+				this.menuState = this.selected;
 				this.time = (float) Math.PI;
-				this.highlighted = 0;
+				this.selected = 0;
 			}
 			break;
 		case 0:
@@ -56,8 +57,8 @@ public class Menu {
 			this.currentOptions = new ArrayList<String>(Arrays.asList(this.levelOptions));
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
 				this.menuState = 0;
-				this.saver.setCurrentLevel(this.highlighted + 1);
-				this.saver.save();
+				Saver.getInstance().setCurrentLevel(this.selected + 1);
+				Saver.getInstance().save();
 			} else if (Keyboard.isKeyDown(Keyboard.KEY_BACK)) {
 				this.menuState = -1;
 			}
@@ -65,30 +66,29 @@ public class Menu {
 		case 2:
 			this.currentOptions = new ArrayList<String>(Arrays.asList(this.settingsOptions));
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
-				this.saver.setSettings(this.highlighted);
-				this.saver.save();
+				Saver.getInstance().setSettings(this.selected);
+				Saver.getInstance().save();
 				this.menuState = -1;
 				this.time = (float) Math.PI;
-				this.highlighted = 0;
+				this.selected = 0;
 			} else if (Keyboard.isKeyDown(Keyboard.KEY_BACK)) {
 				this.menuState = -1;
 			}
 		}
-
-		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN) && this.highlighted < this.currentOptions.size() - 1 && this.time > 3.5) {
-			this.highlighted++;
+		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN) && this.selected < this.currentOptions.size() - 1 && this.time > 3.5) {
+			this.selected++;
 			this.time = (float) Math.PI;
-		} else if (Keyboard.isKeyDown(Keyboard.KEY_UP) && this.highlighted > 0 && this.time > 3.5) {
-			this.highlighted--;
+		} else if (Keyboard.isKeyDown(Keyboard.KEY_UP) && this.selected > 0 && this.time > 3.5) {
+			this.selected--;
 			this.time = (float) Math.PI;
 		}
 	}
 
-	boolean isEnterGame() {
+	public boolean canEnterGame() {
 		return this.menuState == 0;
 	}
 
-	void draw() {
+	public void draw() {
 		switch (this.menuState) {
 		case -1:
 			this.drawMenu();
@@ -104,17 +104,17 @@ public class Menu {
 		}
 	}
 
-	void drawAScreen(String title, String[] strings, int select) {
+	private void drawAScreen(String title, String[] strings, int select) {
 		glLoadIdentity();
 		glColor3d(1, 1, 1);
-		glTranslatef(Game.gameScreen.getX() / 2 - 300, 200, 0.0f);
+		glTranslatef(Game.getGameScreen().getX() / 2 - 300, 200, 0.0f);
 		glScalef(5.0f, 5.0f, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		SimpleText.drawString("RocketGilbs", 0, 0, 8);
 
 		for (int i = 0; i < strings.length; i++) {
 			glLoadIdentity();
-			glTranslatef((float) (Game.gameScreen.getX() / 2 - 450 + (Math.floor(i / 5) * 200)), 300 + i % 5 * 100, 0.0f);
+			glTranslatef((float) (Game.getGameScreen().getX() / 2 - 450 + (Math.floor(i / 5) * 200)), 300 + i % 5 * 100, 0.0f);
 			glScalef(3.0f, 3.0f, 0.0f);
 			glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
@@ -131,17 +131,17 @@ public class Menu {
 		Game.drawBackground();
 	}
 
-	void drawLevelSelect() {
-		this.drawAScreen("Level Select", this.levelOptions, this.highlighted);
+	private void drawLevelSelect() {
+		this.drawAScreen("Level Select", this.levelOptions, this.selected);
 	}
 
-	void drawMenu() {
+	private void drawMenu() {
 		if (this.time > Math.PI) {
-			this.drawAScreen("RocketGilbs", this.menuOptions, this.highlighted);
+			this.drawAScreen("RocketGilbs", this.menuOptions, this.selected);
 		} else {
 			glLoadIdentity();
 			glColor3d(1, 1, 1);
-			glTranslatef(Game.gameScreen.getX() / 2 - 300, 200, 0.0f);
+			glTranslatef(Game.getGameScreen().getX() / 2 - 300, 200, 0.0f);
 			glScalef(5.0f, 5.0f, 0.0f);
 			glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
@@ -149,7 +149,7 @@ public class Menu {
 
 			glLoadIdentity();
 			glColor3d(1, 1, 1);
-			glTranslatef(Game.gameScreen.getX() / 2 - 600, 550, 0.0f);
+			glTranslatef(Game.getGameScreen().getX() / 2 - 600, 550, 0.0f);
 			glScalef(4.0f, 4.0f, 0.0f);
 			glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 			
@@ -157,7 +157,7 @@ public class Menu {
 
 			glLoadIdentity();
 			glColor3d(1, 1, 1);
-			glTranslatef(Game.gameScreen.getX() / 2 - 600, 650, 0.0f);
+			glTranslatef(Game.getGameScreen().getX() / 2 - 600, 650, 0.0f);
 			glScalef(4.0f, 4.0f, 0.0f);
 			glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
@@ -167,7 +167,7 @@ public class Menu {
 		}
 	}
 
-	void drawSettings() {
-		this.drawAScreen("Settings", this.settingsOptions, this.highlighted);
+	private void drawSettings() {
+		this.drawAScreen("Settings", this.settingsOptions, this.selected);
 	}
 }

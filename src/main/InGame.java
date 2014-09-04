@@ -21,90 +21,129 @@ import util.SimpleText;
  * Represents the state of the playable part of the game
  */
 public class InGame {
-	Saver saver; // Saves the game
 	LevelState levelState; // The state of the GameObjects in the game
 	int levelNumber; // Self explanatory
 
-	// fixed planet arrays for shader
+	// Fixed planet arrays for shader
 	float[] pPosX = new float[10];
 	float[] pPosY = new float[10];
 	float[] pRad = new float[10];
 
 	float finalTime;
 
-	public InGame(int level, Saver saver) {
-		this.saver = saver;
+	// Constructor
+	public InGame(int level) {
 		this.levelNumber = level;
 		this.levelState = Leveler.getLevel(level);
 		this.finalTime = 0;
 	}
 
-	void update() {
-		// populate the fixed planet arrays with information to be used in the shader
+	// Updates the state of the game every frame
+	public void update() {
+		// Populate the fixed planet arrays with information to be used in the shader
 		getPlanetShaderInfo();
 
-		// update level state
+		// Update level state
 		this.levelState.update();
 
+		// Check if the player won the game
 		if (playerWin()) {
 			updateFinalTime();
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
 				gotoNextLevel();
 			}
 		}
+		// Check if the player wants to reset the level
 		else if (playerRedo()) {
 			reset();
 		}
 
+		// Check if the explosion transition should be done
 		if (isEndOfRound()) {
 			explodeGilbert();
 		}
 	}
+	
+	// Get information from planets for shaders
+	private void getPlanetShaderInfo() {
+		for (int i = 0; i < levelState.planets.size(); i++) {
+			pPosX[i] = levelState.planets.get(i).getX();
+			pPosY[i] = levelState.planets.get(i).getY();
+			pRad[i] = levelState.planets.get(i).getSphere();
+		}
+	}
+	
+	// Get a new levelstate from the leveler using the current levelNumber
+	private void reset() {
+		pPosX = new float[10];
+		pPosY = new float[10];
+		pRad = new float[10];
+		this.levelState = Leveler.getLevel(levelNumber);
+		this.finalTime = 0;
+	}	
 
+	// Should the level reset?
 	private boolean playerRedo() {
 		return Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.levelState.time > 0.5f;
 	}
 
+	// Did the player win?
 	private boolean playerWin() {
 		return this.levelState.collect.levelEnd();
 	}
 
+	// Update the save file with the next level number
 	private void gotoNextLevel() {
-		this.saver.setCurrentLevel(this.levelNumber + 1);
+		// Increase level number
+		Saver.getInstance().setCurrentLevel(this.levelNumber + 1);
 
-		if (this.levelNumber == this.saver.getMaxLevel()) {
-			this.saver.setMaxLevel(this.levelNumber + 1);
-			this.saver.getTimes().add(1000f);
+		// Increase max level and set a default time if a new max has been reached
+		if (this.levelNumber == Saver.getInstance().getMaxLevel()) {
+			Saver.getInstance().setMaxLevel(this.levelNumber + 1);
+			Saver.getInstance().getTimes().add(1000f);
 		}
 
-		if (this.finalTime < this.saver.getTimes().get(this.levelNumber - 1)) {
-			this.saver.getTimes().set(this.levelNumber - 1, this.finalTime);
+		// If new best time then overwrite the current best
+		if (this.finalTime < Saver.getInstance().getTimes().get(this.levelNumber - 1)) {
+			Saver.getInstance().getTimes().set(this.levelNumber - 1, this.finalTime);
 		}
 
-		this.saver.save();
+		// Save the game
+		Saver.getInstance().save();
+		
+		// Change the level
 		this.levelNumber++;
+		
+		// Reset the gamestate using the new level
 		this.reset();
 	}
 
+	// Change the final time to the level state's current time
 	private void updateFinalTime() {
 		if (this.finalTime == 0) {
 			this.finalTime = this.levelState.time;
 		}
 	}
 
+	// Increase the explosion aura around gilbert
 	private void explodeGilbert() {
 		levelState.gilbs.setDeathScaleFactor((float) (levelState.gilbs.getDeathScaleFactor() * 0.8));
 	}
 
+	// Has the current play of the level has ended?
 	private boolean isEndOfRound() {
 		return levelState.gilbs.isKillGill() || levelState.collect.levelEnd();
 	}
 
+	// Renders the state of the game and the UI elements
 	void draw() {
-		if (gilbertNotDead()) {
+		if (gilbertNotExploding()) {
 			// draw gilbert and planets
 			this.levelState.draw();
 
+			// draw the number of signals collected
+			this.levelState.displayCollected();
+			
 			// draw the current time
 			displayTime();
 			
@@ -124,11 +163,13 @@ public class InGame {
 		}
 	}
 
-	private boolean gilbertNotDead() {
+	// Is Gilbert exploding?
+	private boolean gilbertNotExploding() {
 		return this.levelState.gilbs.getDeathScaleFactor() > 0.00001;
 	}
 	
-	void displayTime() {
+	// Display the level's current time
+	private void displayTime() {
 		glLoadIdentity();
 		glColor3d(1,1,1);
 		glTranslatef(0.0f, 30.0f, 0.0f);
@@ -137,44 +178,30 @@ public class InGame {
 		SimpleText.drawString(String.format("Time: %.1f", this.levelState.time), 0, 0, 3);
 	}
 
-	void reset() {
-		pPosX = new float[10];
-		pPosY = new float[10];
-		pRad = new float[10];
-		this.levelState = Leveler.getLevel(levelNumber);
-		this.finalTime = 0;
-	}
-
-	void getPlanetShaderInfo() {
-		for (int i = 0; i < levelState.planets.size(); i++) {
-			pPosX[i] = levelState.planets.get(i).getX();
-			pPosY[i] = levelState.planets.get(i).getY();
-			pRad[i] = levelState.planets.get(i).getSphere();
-		}
-	}
-
-	void drawBest() {
-		if (this.saver.getTimes().get(this.levelNumber - 1) != 1000) {
+	// Display the best time completed by the player
+	private void drawBest() {
+		if (Saver.getInstance().getTimes().get(this.levelNumber - 1) != 1000) {
 			glLoadIdentity();
 			glColor3d(1, 1, 1);
 			glTranslatef(600.0f, 30.0f, 0.0f);
 			glScalef(3.0f, 3.0f, 0.0f);
 			glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-			SimpleText.drawString(String.format("Best: %.1f", this.saver.getTimes().get(this.levelNumber - 1)), 0, 0, 3);
+			SimpleText.drawString(String.format("Best: %.1f", Saver.getInstance().getTimes().get(this.levelNumber - 1)), 0, 0, 3);
 		}
 	}
 
-	void drawGameOver() {
+	// Display the game over screen
+	private void drawGameOver() {
 		glLoadIdentity();
 		glColor3d(0, 0, 0);
-		glTranslatef(Game.screen.getX() / 2 - 350, Game.screen.getY() / 2, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 350, Game.getScreen().getY() / 2, 0.0f);
 		glScalef(10.0f, 10.0f, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		SimpleText.drawString("Game Over", 0, 0, 20);
 
 		glLoadIdentity();
 		glColor3d(0, 0, 0);
-		glTranslatef(Game.screen.getX() / 2 - 425, Game.screen.getY() / 2 + 200, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 425, Game.getScreen().getY() / 2 + 200, 0.0f);
 		glScalef(5.0f, 5.0f, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		SimpleText.drawString("Press SPACE To Restart", 0, 0, 10);
@@ -183,23 +210,24 @@ public class InGame {
 		glBegin(GL_QUADS);
 		glColor3d(1, 0, 0);
 		glVertex2i(0, 0);
-		glVertex2i(0, (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), 0);
+		glVertex2i(0, (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), 0);
 		glEnd();
 	}
 
-	void drawWin() {
+	// Display the you win screen
+	private void drawWin() {
 		glLoadIdentity();
 		glColor3d(0, 0, 0);
-		glTranslatef(Game.screen.getX() / 2 - 300, Game.screen.getY() / 2, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 300, Game.getScreen().getY() / 2, 0.0f);
 		glScalef(10.0f, 10.0f, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		SimpleText.drawString("You Win", 0, 0, 20);
 
 		glLoadIdentity();
 		glColor3d(0, 0, 0);
-		glTranslatef(Game.screen.getX() / 2 - 450, Game.screen.getY() / 2 + 200, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 450, Game.getScreen().getY() / 2 + 200, 0.0f);
 		glScalef(5.0f, 5.0f, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		SimpleText.drawString("Press SPACE To Continue", 0, 0, 10);
@@ -208,9 +236,9 @@ public class InGame {
 		glBegin(GL_QUADS);
 		glColor3d(0, 1, 0);
 		glVertex2i(0, 0);
-		glVertex2i(0, (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), 0);
+		glVertex2i(0, (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), 0);
 		glEnd();
 	}
 }

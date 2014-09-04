@@ -1,13 +1,16 @@
 package util;
 // Copyright 2014 Benjamin Wagner using a GPL license
 
+/**
+ * A Data clump used in tweaking performance of the shaders
+ */
 public class Settings {
 	int iterations;
 	int volsteps;
 	float stepsize;
 
+	// Constructor
 	Settings(int setting) {
-
 		switch(setting)
 		{
 		case 0:
@@ -43,6 +46,7 @@ public class Settings {
 		}
 	}
 
+	// Get the text needed to inject into the shader (Very Hacky)
 	public String getSettings() {
 		return "#define iterations " + this.iterations + "\n" +
 				"#define volsteps " + this.volsteps + "\n" +

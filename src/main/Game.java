@@ -53,21 +53,21 @@ import util.SimpleText;
  * Manages the Menu and InGame states.
  */
 public class Game {
-	static Vector2f screen; // screen size specified by player
-	static Vector2f gameScreen; // size of the coordinate plane
+	private static Vector2f screen; // screen size specified by player
+	private static Vector2f gameScreen; // size of the coordinate plane
 	private static Vector3f scaleVector; // used for reconciling differences in aspect ratio
 
-	InGame inGame; // The InGame state
-	Menu menu; // The Menu state
-	ShaderLoader sl; // Loads the bloom and star shader files
-	boolean start; // Has the game started?
-	Saver saver; // Saves the game
+	private InGame inGame; // The InGame state
+	private Menu menu; // The Menu state
+	private ShaderLoader sl; // Loads the bloom and star shader files
+	private boolean start; // Has the game started?
 
 	// Constructor
 	public Game() {
-		this.saver = new Saver("src/save.txt");
+		this.inGame = null;
+		this.menu = new Menu();	
+		this.sl = null;
 		this.start = false;
-		this.menu = new Menu(saver);
 	}
 
 	// Sets up the game
@@ -83,14 +83,14 @@ public class Game {
 
 	// Initializes screen constants used in aspect ratio correcting
 	private void initScaleVector() {
-		gameScreen = new Vector2f(1280, 720);
-		screen = saver.getScreen();
-		scaleVector = new Vector3f((float) (Game.screen.x / Game.gameScreen.x), (float) (Game.screen.y / Game.gameScreen.y), 0);
+		setGameScreen(new Vector2f(1280, 720));
+		setScreen(Saver.getInstance().getScreen());
+		setScaleVector(new Vector3f((float) (Game.getScreen().x / Game.getGameScreen().x), (float) (Game.getScreen().y / Game.getGameScreen().y), 0));
 	}
 
 	// Creates the window for LWJGL
 	private void createDisplay() throws LWJGLException {
-		Display.setDisplayMode(new DisplayMode((int) screen.x, (int) screen.y));
+		Display.setDisplayMode(new DisplayMode((int) getScreen().x, (int) getScreen().y));
 		Display.setVSyncEnabled(true);
 		Display.setTitle("Rocket Gilbs");
 		Display.create();
@@ -99,9 +99,9 @@ public class Game {
 	// Creates an OPENGL view in the display
 	private void initOpenGL() {
 		glLoadIdentity();
-		glViewport(0, 0, (int) screen.x, (int) screen.y);
+		glViewport(0, 0, (int) getScreen().x, (int) getScreen().y);
 		glMatrixMode(GL_PROJECTION);
-		glOrtho(0, (int) screen.x, (int) screen.y, 0, 1, -1);
+		glOrtho(0, (int) getScreen().x, (int) getScreen().y, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -167,7 +167,7 @@ public class Game {
 	// Additional user exit command
 	private void handleExit() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-			this.saver.save();
+			Saver.getInstance().save();
 			System.exit(0);
 		}
 	}
@@ -178,10 +178,10 @@ public class Game {
 		this.menu.draw();
 		
 		// Entering the game
-		if (this.menu.isEnterGame()) {
-			this.start = this.menu.isEnterGame();
-			this.inGame = new InGame(this.saver.getCurrentLevel(), this.saver);
-			this.sl = new ShaderLoader("shader", this.saver.getSettings());
+		if (this.menu.canEnterGame()) {
+			this.start = this.menu.canEnterGame();
+			this.inGame = new InGame(Saver.getInstance().getCurrentLevel());
+			this.sl = new ShaderLoader("shader", Saver.getInstance().getSettings());
 		}
 	}
 
@@ -196,14 +196,14 @@ public class Game {
 	void handleWinGame() {
 		glLoadIdentity();
 		glColor3d(1, 1, 1);
-		glTranslatef(Game.screen.getX() / 2 - 300, Game.screen.getY() / 2, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 300, Game.getScreen().getY() / 2, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		glScalef(10.0f, 10.0f, 0.0f);
 		SimpleText.drawString("You Win", 0, 0, 20);
 
 		glLoadIdentity();
 		glColor3d(1, 1, 1);
-		glTranslatef(Game.screen.getX() / 2 - 550, Game.screen.getY() / 2 + 200, 0.0f);
+		glTranslatef(Game.getScreen().getX() / 2 - 550, Game.getScreen().getY() / 2 + 200, 0.0f);
 		glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 		glScalef(5.0f, 5.0f, 0.0f);
 		SimpleText.drawString("Like The Whole Game. That's It", 0, 0, 10);
@@ -212,9 +212,9 @@ public class Game {
 		glBegin(GL_QUADS);
 		glColor3d(0, 0, 0);
 		glVertex2i(0, 0);
-		glVertex2i(0, (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), (int) Game.screen.getY());
-		glVertex2i((int) Game.screen.getX(), 0);
+		glVertex2i(0, (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), (int) Game.getScreen().getY());
+		glVertex2i((int) Game.getScreen().getX(), 0);
 		glEnd();
 	}
 
@@ -229,9 +229,9 @@ public class Game {
 		glBegin(GL_QUADS); {
 			glColor3d(0, 0, 0);
 			glVertex2i(0, 0);
-			glVertex2i(0, (int) Game.screen.getY());
-			glVertex2i((int) Game.screen.getX(), (int) Game.screen.getY());
-			glVertex2i((int) Game.screen.getX(), 0);
+			glVertex2i(0, (int) Game.getScreen().getY());
+			glVertex2i((int) Game.getScreen().getX(), (int) Game.getScreen().getY());
+			glVertex2i((int) Game.getScreen().getX(), 0);
 		}
 		glEnd();
 	}
@@ -275,9 +275,9 @@ public class Game {
 
 	// Gives the shader information about the game's state
 	private void pushGameState() {
-		glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "resolution"), (float) gameScreen.getX(), (float) gameScreen.getY());
+		glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "resolution"), (float) getGameScreen().getX(), (float) getGameScreen().getY());
 		glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "time"), this.inGame.levelState.time);
-		glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "scaler"), (float) gameScreen.getX() / screen.getX(), (float) gameScreen.getY() / screen.getY());
+		glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "scaler"), (float) getGameScreen().getX() / getScreen().getX(), (float) getGameScreen().getY() / getScreen().getY());
 		glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "zoom"), (float) ((this.inGame.levelNumber * 0.2) + 0.5));
 	}
 
@@ -300,16 +300,36 @@ public class Game {
 	public static Vector3f getScaleVector() {
 		return scaleVector;
 	}
+	
+	private static void setScaleVector(Vector3f scaleVector) {
+		Game.scaleVector = scaleVector;
+	}
 
 	public static float getScaleX() {
-		return scaleVector.getX();
+		return getScaleVector().getX();
 	}
 
 	public static float getScaleY() {
-		return scaleVector.getY();
+		return getScaleVector().getY();
 	}
 
 	public static float getScaleZ() {
-		return scaleVector.getZ();
+		return getScaleVector().getZ();
+	}
+
+	public static Vector2f getScreen() {
+		return screen;
+	}
+
+	public static void setScreen(Vector2f screen) {
+		Game.screen = screen;
+	}
+
+	public static Vector2f getGameScreen() {
+		return gameScreen;
+	}
+
+	public static void setGameScreen(Vector2f gameScreen) {
+		Game.gameScreen = gameScreen;
 	}
 }

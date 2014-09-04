@@ -1,117 +1,100 @@
 package util;
-// Copyright 2014 Benjamin Wagner using a GPL license
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.lwjgl.util.vector.Vector2f;
 
+/**
+ * A singleton class used to save data across the application
+ */
 public class Saver {
 
-	BufferedReader br;
-	BufferedWriter bw;
-
-	private int maxLevel;
-	private int currentLevel;
-	private int settings;
-	private Vector2f screen;
-	private ArrayList<Float> times;
+	private static Saver instance = null;
 	
-	String source;
+	private int maxLevel; // Highest level ever reached by the player
+	private int currentLevel; // The level the player is currently at
+	private int settings; // The performance settings for the shaders
+	private Vector2f screen; // The screen size
+	private ArrayList<Float> times; // The best times for each level
 
-	public Saver(String source) {
-
-		this.source = source;
-		this.br = null;
-		this.bw = null;
-
-		try
-		{
-			this.br = new BufferedReader(new FileReader(source));
+	// Gets the singleton's instance
+	public static Saver getInstance() {
+		if(instance == null) {
+			instance = new Saver();
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-
-		this.setTimes(new ArrayList<Float>());
-		
-		this.load();
+		return instance;
+	}
+	
+	// Constructor
+	private Saver() {
+		load();
 	}
 
-	void load()
-	{
-		try{
+	// Uses the save file to initialize variables
+	public void load() {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/save.txt"));
 			String line = new String();
-
-			while ((line = this.br.readLine()) != null)
-			{
-				if(line.equals("max"))
-				{
-					this.setMaxLevel(Integer.parseInt(this.br.readLine()));
+			while ((line = br.readLine()) != null) {
+				if (line.equals("max")) {
+					this.setMaxLevel(Integer.parseInt(br.readLine()));
+				}
+				if (line.equals("current")) {
+					this.setCurrentLevel(Integer.parseInt(br.readLine()));
 				}
 
-				if(line.equals("current"))
-				{
-					this.setCurrentLevel(Integer.parseInt(this.br.readLine()));
+				if (line.equals("settings")) {
+					this.setSettings(Integer.parseInt(br.readLine()));
 				}
 
-				if(line.equals("settings"))
-				{
-					this.setSettings(Integer.parseInt(this.br.readLine()));
+				if (line.equals("screen")) {
+					this.setScreen(new Vector2f(Float.parseFloat(br.readLine()), Float.parseFloat(br.readLine())));
 				}
-				
-				if(line.equals("screen")) {
-					this.setScreen(new Vector2f(Float.parseFloat(this.br.readLine()),Float.parseFloat(this.br.readLine())));
-				}
-				
-				if(line.equals("times"))
-				{
-					for(int i = 0; i < this.getMaxLevel(); i++)
-					{
-						this.br.readLine();
-						this.getTimes().add(Float.parseFloat(this.br.readLine()));
+				if (line.equals("times")) {
+					this.setTimes(new ArrayList<Float>());
+					for (int i = 0; i < this.getMaxLevel(); i++) {
+						br.readLine();
+						this.getTimes().add(Float.parseFloat(br.readLine()));
 					}
 				}
 			}
-			
-			this.br.close();
-		}
-		catch (Exception e){
+			br.close();
+		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 		}
 	}
 
-	public void save()
-	{
-		try{
-			this.bw = new BufferedWriter(new FileWriter(this.source));
+	// Overwrites the save file with new data
+	public void save() {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("src/save.txt"));
 			StringBuilder file = new StringBuilder();
 			file.append("max\n" + this.getMaxLevel() + "\n");
 			file.append("current\n" + this.getCurrentLevel() + "\n");
 			file.append("settings\n" + this.getSettings() + "\n");
 			file.append("screen\n" + this.getScreen().x + "\n" + this.getScreen().y + "\n");
 			file.append("times\n");
-			
-			for(int i = 0; i < this.getTimes().size(); i++)
-			{
+
+			for (int i = 0; i < this.getTimes().size(); i++) {
 				file.append("t" + i + "\n");
 				file.append(this.getTimes().get(i) + "\n");
 			}
-			
-			this.bw.write(file.toString());
-			this.bw.close();
-		}
-		catch (Exception e){
+
+			bw.write(file.toString());
+			bw.close();
+		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 		}
-
 	}
 
+////////////////////////////////////////////////////////////////////////////////
+//                           Accessors and Mutators
+////////////////////////////////////////////////////////////////////////////////
+	
 	public int getMaxLevel() {
 		return maxLevel;
 	}
