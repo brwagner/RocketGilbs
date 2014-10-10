@@ -6,9 +6,9 @@ package util;
  */
 public class Settings {
 
-  int iterations;
-  int volsteps;
-  float stepsize;
+  private int iterations;
+  private int volsteps;
+  private float stepsize;
 
   // Constructor
   Settings(int setting) {

@@ -2,10 +2,11 @@ package main;
 
 import java.util.ArrayList;
 
+import gameobject.ADrawable;
 import gameobject.Collectable;
 import gameobject.Gilbert;
 import gameobject.Planet;
-import util.SimpleText;
+import util.text.SimpleText;
 
 import static org.lwjgl.opengl.GL11.glColor3d;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
@@ -54,9 +55,7 @@ public class LevelState {
 
   // Rotates the planets on every frame
   private void updatePlanets() {
-    for (Planet planet : this.planets) {
-      planet.update();
-    }
+    this.planets.forEach(Planet::update);
   }
 
   // Updates Gilbert's position based on player input and planets
@@ -70,9 +69,7 @@ public class LevelState {
   public void draw() {
     this.gilbs.draw();
     this.collect.draw();
-    for (Planet p : planets) {
-      p.draw();
-    }
+    planets.forEach(ADrawable::draw);
   }
 
   // Draws how many collectables are in the level and how many have been collected already

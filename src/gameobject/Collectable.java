@@ -22,7 +22,7 @@ public class Collectable extends AGameObject implements NonPlayer {
   // Constructor
   public Collectable(Queue<Vector2f> q) {
     // sets the x and y coordinates to the first element of the Queue
-    super(q.peek().getX(), q.peek().getY(), 20);
+    super(new Vector2f(q.peek().getX(), q.peek().getY()), 20);
     this.setPoints(q);
     this.setAngle(0);
     this.setTotalPoints(this.getPoints().size());
@@ -52,7 +52,7 @@ public class Collectable extends AGameObject implements NonPlayer {
   public void moveNext() {
     this.getPoints().poll();
     if (!this.levelEnd()) {
-      this.setPos(new Vector2f(this.getPoints().peek().getX(), this.getPoints().peek().getY()));
+      this.setPos(new Vector2f(this.getPoints().peek()));
     }
   }
 
@@ -63,7 +63,7 @@ public class Collectable extends AGameObject implements NonPlayer {
 
   // Easy way to make a bunch of points in level design
   public static Queue<Vector2f> makePoints(int... x) {
-    Queue<Vector2f> q = new LinkedList<Vector2f>();
+    Queue<Vector2f> q = new LinkedList<>();
     for (int i = 0; i < x.length; i += 2) {
       q.add(new Vector2f(x[i], x[i + 1]));
     }

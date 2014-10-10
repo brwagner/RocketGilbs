@@ -27,17 +27,15 @@ import static org.lwjgl.opengl.GL20.glValidateProgram;
  */
 public class ShaderLoader {
 
-  int shaderProgram; // Used to identify the program in OpenGL
-  int vertexShader; // Used to identify the vertex shader
-  int fragmentShader; // Used to identify the fragment shader
-  StringBuilder vertexShaderSource; // Generated from shader.vert
-  StringBuilder fragmentShaderSource; // Generated from shader.frag
-  String fileName; // The file name of the shaders
-  Settings settings; // Performance tweaks injected into source code
+  private int shaderProgram; // Used to identify the program in OpenGL
+  private int vertexShader; // Used to identify the vertex shader
+  private int fragmentShader; // Used to identify the fragment shader
+  private StringBuilder vertexShaderSource; // Generated from shader.vert
+  private StringBuilder fragmentShaderSource; // Generated from shader.frag
+  private Settings settings; // Performance tweaks injected into source code
 
   // Constructor
   public ShaderLoader(String fileName, int settings) {
-    this.fileName = fileName;
     this.shaderProgram = glCreateProgram();
     this.vertexShader = glCreateShader(GL_VERTEX_SHADER);
     this.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);

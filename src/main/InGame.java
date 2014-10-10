@@ -4,7 +4,7 @@ import org.lwjgl.input.Keyboard;
 
 import util.Leveler;
 import util.Saver;
-import util.SimpleText;
+import util.text.SimpleText;
 
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.glBegin;
@@ -30,7 +30,7 @@ public class InGame {
   float[] pPosY = new float[10];
   float[] pRad = new float[10];
 
-  float finalTime;
+  private float finalTime;
 
   // Constructor
   public InGame(int level) {
@@ -68,8 +68,8 @@ public class InGame {
   // Get information from planets for shaders
   private void getPlanetShaderInfo() {
     for (int i = 0; i < levelState.planets.size(); i++) {
-      pPosX[i] = levelState.planets.get(i).getX();
-      pPosY[i] = levelState.planets.get(i).getY();
+      pPosX[i] = levelState.planets.get(i).getPos().getX();
+      pPosY[i] = levelState.planets.get(i).getPos().getY();
       pRad[i] = levelState.planets.get(i).getSphere();
     }
   }

@@ -1,9 +1,12 @@
 package gameobject;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.util.ArrayList;
+
+import particle.ParticleSystem;
 
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glBegin;
@@ -18,28 +21,36 @@ public class Gilbert extends AGameObject {
 
   private boolean killGill; // Is this dead?
   private float deathScaleFactor; // Determines how big the death explosion should be
+  private ParticleSystem exhaust; // Exhaust particle system
   private Vector2f v; // Velocity
   private Vector2f a; // Acceleration
 
   // Constructor
-  public Gilbert(float x, float y, float vx, float vy, float ax, float ay) {
-    super(x, y, 10);
-    this.setV(new Vector2f((float) vx, (float) vy));
-    this.setA(new Vector2f((float) ax, (float) ay));
+  public Gilbert(float x, float y, float vx, float vy) {
+    super(new Vector2f(x, y), 10);
+    this.setV(new Vector2f(vx, vy));
+    this.setA(new Vector2f(0, 0));
     this.setAngle(0);
     this.setKillGill(false);
     this.setDeathScaleFactor(1);
+    this.setExhaust(ParticleSystem.createExhaustSystemOn(this));
   }
 
   // Draws player to the screen
   public void draw() {
+    drawGilbs();
+    getExhaust().draw();
+  }
+
+  private void drawGilbs() {
     super.draw();
+
     glBegin(GL_TRIANGLES);
     {
       glColor3d(1, 1, 0);
       glVertex2f(-10, -10);
-      glVertex2f(13, 0);
       glVertex2f(-10, 10);
+      glVertex2f(13, 0);
     }
     glEnd();
   }
@@ -50,16 +61,14 @@ public class Gilbert extends AGameObject {
     this.updatePlanetForces(planets);
     this.updatePlayerInput(this.getInput());
     this.updateDeath(planets);
+    this.updateExhaust();
   }
 
   // Check for death
   private void updateDeath(ArrayList<Planet> planets) {
     // Check for collision with planets
-    for (Planet p : planets) {
-      if (this.didCollideWith(p)) {
-        this.setKillGill(true);
-      }
-    }
+    planets.stream().filter(this::didCollideWith).forEach(p -> this.setKillGill(true));
+
     // Check if out of bounds
     if (this.isOutOfBounds()) {
       this.setKillGill(true);
@@ -86,10 +95,16 @@ public class Gilbert extends AGameObject {
   // Set the player's angle to face their velocity vector
   private void updateAngle() {
     if (this.isPlaying()) {
-      this.setAngle((float) (180 * Math.atan2(getV().getY(), getV().getX()) / Math.PI));
+      this.setAngle(180 * Math.atan2(getV().getY(), getV().getX()) / Math.PI);
     } else {
       this.setAngle(this.getAngle() + 3);
     }
+  }
+
+  // move the exhaust system
+  private void updateExhaust() {
+    this.getExhaust().update();
+    this.getExhaust().setPaused(this.getInput() <= 0.0f);
   }
 
   // Check if the game is still going
@@ -115,10 +130,14 @@ public class Gilbert extends AGameObject {
     float jerk = 0;
     float c = 0.01f;
 
-    if (Keyboard.isKeyDown(Keyboard.KEY_UP) || Keyboard.isKeyDown(Keyboard.KEY_W)) {
+    if (Keyboard.isKeyDown(Keyboard.KEY_UP) ||
+        Keyboard.isKeyDown(Keyboard.KEY_W) ||
+        Mouse.isButtonDown(0)) {
       jerk = c;
     }
-    if (Keyboard.isKeyDown(Keyboard.KEY_DOWN) || Keyboard.isKeyDown(Keyboard.KEY_S)) {
+    if (Keyboard.isKeyDown(Keyboard.KEY_DOWN) ||
+        Keyboard.isKeyDown(Keyboard.KEY_S) ||
+        Mouse.isButtonDown(1)) {
       jerk = -c;
     }
     return jerk;
@@ -126,23 +145,23 @@ public class Gilbert extends AGameObject {
 
   // Is this outside of the screen
   private boolean isOutOfBounds() {
-    return this.getPos().getX() > 1280 || this.getPos().getX() < 0 || this.getPos().getY() > 720
-           || this.getPos().getY() < 0;
+    return
+        this.getPos().getX() > 1280 ||
+        this.getPos().getX() < 0 ||
+        this.getPos().getY() > 720 ||
+        this.getPos().getY() < 0;
   }
 
   // Get the force that should be applied to Gilbert from a Planet
   private Vector2f getForceOnPlanet(Planet p) {
-    float distX = (float) (this.getX() - p.getX());
-    float distY = (float) (this.getY() - p.getY());
+    float distX = this.getPos().getX() - p.getPos().getX();
+    float distY = this.getPos().getY() - p.getPos().getY();
 
     float force = (float) (p.getWeight() / (Math.pow(p.distanceTo(this), 2)));
 
-    Vector2f
-        forceVector =
-        new Vector2f(force * (distX / (Math.abs(distX) + Math.abs(distY))),
-                     force * (distY / (Math.abs(distX) + Math.abs(distY))));
-
-    return forceVector;
+    return new Vector2f(
+        force * (distX / (Math.abs(distX) + Math.abs(distY))),
+        force * (distY / (Math.abs(distX) + Math.abs(distY))));
   }
 
   // Determine if Gilbert is in the planet's sphere of influence
@@ -178,11 +197,19 @@ public class Gilbert extends AGameObject {
     this.v = v;
   }
 
-  Vector2f getA() {
+  public Vector2f getA() {
     return a;
   }
 
-  void setA(Vector2f a) {
+  public void setA(Vector2f a) {
     this.a = a;
+  }
+
+  public ParticleSystem getExhaust() {
+    return exhaust;
+  }
+
+  public void setExhaust(ParticleSystem exhaust) {
+    this.exhaust = exhaust;
   }
 }

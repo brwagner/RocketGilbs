@@ -8,16 +8,16 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
-import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.openal.SoundStore;
-import org.newdawn.slick.util.ResourceLoader;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import main.menu.MenuContext;
+import main.menu.states.main.MainMenuState;
 import util.Saver;
 import util.ShaderLoader;
-import util.SimpleText;
+import util.text.SimpleText;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -58,21 +58,21 @@ public class Game {
   private static Vector3f scaleVector; // used for reconciling differences in aspect ratio
 
   private InGame inGame; // The InGame state
-  private Menu menu; // The Menu state
+  private MenuContext menu; // The Menu state
   private ShaderLoader sl; // Loads the bloom and star shader files
   private boolean start; // Has the game started?
 
   // Constructor
   public Game() {
+    initScreenConstants();
     this.inGame = null;
-    this.menu = new Menu();
+    this.menu = new MenuContext(new MainMenuState());
     this.sl = null;
     this.start = false;
   }
 
   // Sets up the game
   void setup() {
-    initScreenConstants();
     try {
       createDisplay();
     } catch (LWJGLException e) {
@@ -85,8 +85,8 @@ public class Game {
   private void initScreenConstants() {
     setGameScreen(new Vector2f(1280, 720));
     setScreen(Saver.getInstance().getScreen());
-    setScaleVector(new Vector3f((float) (Game.getScreen().x / Game.getGameScreen().x),
-                                (float) (Game.getScreen().y / Game.getGameScreen().y), 0));
+    setScaleVector(new Vector3f(Game.getScreen().x / Game.getGameScreen().x,
+                                Game.getScreen().y / Game.getGameScreen().y, 0));
   }
 
   // Creates the window for LWJGL
@@ -97,7 +97,7 @@ public class Game {
     Display.create();
   }
 
-  // Creates an OPENGL view in the display
+  // Creates an OPENGL view in the draw
   private void initOpenGL() {
     glLoadIdentity();
     glViewport(0, 0, (int) getScreen().x, (int) getScreen().y);
@@ -122,8 +122,8 @@ public class Game {
 
   // Loads the background music for the game from res
   void loadSounds() throws IOException {
-    AudioLoader.getStreamingAudio("OGG", ResourceLoader.getResource("rec/music.ogg"))
-        .playAsMusic(1.0f, 1.0f, true);
+    //AudioLoader.getStreamingAudio("OGG", ResourceLoader.getResource("rec/music.ogg"))
+    //    .playAsMusic(1.0f, 1.0f, true);
   }
 
   // The main update loop called every frame
@@ -137,7 +137,7 @@ public class Game {
       // update the game
       update();
 
-      // update display
+      // update draw
       Display.update();
       Display.sync(60);
 
@@ -180,9 +180,9 @@ public class Game {
     this.menu.draw();
 
     // Entering the game
-    if (this.menu.canEnterGame()) {
-      this.start = this.menu.canEnterGame();
-      this.inGame = new InGame(Saver.getInstance().getCurrentLevel());
+    if (this.menu.isCanStart()) {
+      this.start = this.menu.isCanStart();
+      this.inGame = new InGame(menu.getSelectedLevel());
       this.sl = new ShaderLoader("shader", Saver.getInstance().getSettings());
     }
   }
@@ -226,7 +226,7 @@ public class Game {
   }
 
   // Draws a blank screen
-  static void drawBackground() {
+  public static void drawBackground() {
     glLoadIdentity();
     glBegin(GL_QUADS);
     {
@@ -279,11 +279,11 @@ public class Game {
   // Gives the shader information about the game's state
   private void pushGameState() {
     glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "resolution"),
-                (float) getGameScreen().getX(), (float) getGameScreen().getY());
+                getGameScreen().getX(), getGameScreen().getY());
     glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "time"), this.inGame.levelState.time);
     glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "scaler"),
-                (float) getGameScreen().getX() / getScreen().getX(),
-                (float) getGameScreen().getY() / getScreen().getY());
+                getGameScreen().getX() / getScreen().getX(),
+                getGameScreen().getY() / getScreen().getY());
     glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "zoom"),
                 (float) ((this.inGame.levelNumber * 0.2) + 0.5));
   }
@@ -291,7 +291,8 @@ public class Game {
   // Gives the shader information about the player
   private void pushGilbertState() {
     glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "gPos"),
-                this.inGame.levelState.gilbs.getX(), this.inGame.levelState.gilbs.getY());
+                this.inGame.levelState.gilbs.getPos().getX(),
+                this.inGame.levelState.gilbs.getPos().getY());
     glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "gVel"),
                 this.inGame.levelState.gilbs.getV().length());
     glUniform1f(glGetUniformLocation(sl.getShaderProgram(), "deathScale"),
@@ -301,14 +302,15 @@ public class Game {
   // Gives the shader information about signals
   private void pushCollectableState() {
     glUniform2f(glGetUniformLocation(sl.getShaderProgram(), "cPos"),
-                this.inGame.levelState.collect.getX(), this.inGame.levelState.collect.getY());
+                this.inGame.levelState.collect.getPos().getX(),
+                this.inGame.levelState.collect.getPos().getY());
   }
 
 ////////////////////////////////////////////////////////////////////////////////
 //                         Accessors and Mutators
 ////////////////////////////////////////////////////////////////////////////////
 
-  public static Vector3f getScaleVector() {
+  private static Vector3f getScaleVector() {
     return scaleVector;
   }
 
@@ -332,7 +334,7 @@ public class Game {
     return screen;
   }
 
-  public static void setScreen(Vector2f screen) {
+  private static void setScreen(Vector2f screen) {
     Game.screen = screen;
   }
 
@@ -340,7 +342,7 @@ public class Game {
     return gameScreen;
   }
 
-  public static void setGameScreen(Vector2f gameScreen) {
+  private static void setGameScreen(Vector2f gameScreen) {
     Game.gameScreen = gameScreen;
   }
 }

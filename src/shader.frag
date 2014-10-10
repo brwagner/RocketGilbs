@@ -22,12 +22,12 @@ uniform float pRad[10];
 #define formuparam 0.73
 
 //#define zoom   0.500
-#define tile   0.450
+#define tile   0.550
 #define speed  0.010
 
 #define brightness 0.004
-#define darkmatter 1.000
-#define distfading 0.730
+#define darkmatter 0.500
+#define distfading 0.700
 #define saturation 1.000
 
 float haversine(float x) {
@@ -45,7 +45,7 @@ float aura(vec2 point, vec2 origin, float falloff) {
 
 vec3 stars()
 {
-	// Star Nest by Pablo Román Andrioli
+	// Star Nest by Pablo Romn Andrioli
 	// This content is under the MIT License.
 	//get coords and direction
 	vec2 uv=gl_FragCoord.xy/resolution.xy-.5;

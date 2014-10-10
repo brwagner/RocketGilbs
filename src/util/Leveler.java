@@ -14,34 +14,34 @@ import main.LevelState;
  */
 public class Leveler {
 
-  static final int MAX_X = 1280;
-  static final int MAX_Y = 720;
-  static final int MID_X = MAX_X / 2;
-  static final int MID_Y = MAX_Y / 2;
-  static final int EIGHTH1_X = MAX_X / 8;
-  static final int EIGHTH2_X = EIGHTH1_X * 2;
-  static final int EIGHTH3_X = EIGHTH1_X * 3;
-  static final int EIGHTH4_X = EIGHTH1_X * 4;
-  static final int EIGHTH5_X = EIGHTH1_X * 5;
+  private static final int MAX_X = 1280;
+  private static final int MAX_Y = 720;
+  private static final int MID_X = MAX_X / 2;
+  private static final int MID_Y = MAX_Y / 2;
+  private static final int EIGHTH1_X = MAX_X / 8;
+  private static final int EIGHTH2_X = EIGHTH1_X * 2;
+  private static final int EIGHTH3_X = EIGHTH1_X * 3;
+  private static final int EIGHTH4_X = EIGHTH1_X * 4;
+  private static final int EIGHTH5_X = EIGHTH1_X * 5;
   static final int EIGHTH6_X = EIGHTH1_X * 6;
   static final int EIGHTH7_X = EIGHTH1_X * 7;
-  static final int QUART1_X = MAX_X / 4;
+  private static final int QUART1_X = MAX_X / 4;
   static final int QUART2_X = QUART1_X * 2;
   static final int QUART3_X = QUART1_X * 3;
-  static final int THIRD1_X = MAX_X / 3;
+  private static final int THIRD1_X = MAX_X / 3;
   static final int THIRD2_X = THIRD1_X * 2;
   static final int THIRD3_X = THIRD1_X * 3;
-  static final int EIGHTH1_Y = MAX_Y / 8;
-  static final int EIGHTH2_Y = EIGHTH1_Y * 2;
-  static final int EIGHTH3_Y = EIGHTH1_Y * 3;
-  static final int EIGHTH4_Y = EIGHTH1_Y * 4;
-  static final int EIGHTH5_Y = EIGHTH1_Y * 5;
+  private static final int EIGHTH1_Y = MAX_Y / 8;
+  private static final int EIGHTH2_Y = EIGHTH1_Y * 2;
+  private static final int EIGHTH3_Y = EIGHTH1_Y * 3;
+  private static final int EIGHTH4_Y = EIGHTH1_Y * 4;
+  private static final int EIGHTH5_Y = EIGHTH1_Y * 5;
   static final int EIGHTH6_Y = EIGHTH1_Y * 6;
   static final int EIGHTH7_Y = EIGHTH1_Y * 7;
-  static final int QUART1_Y = MAX_Y / 4;
+  private static final int QUART1_Y = MAX_Y / 4;
   static final int QUART2_Y = QUART1_Y * 2;
   static final int QUART3_Y = QUART1_Y * 3;
-  static final int THIRD1_Y = MAX_Y / 3;
+  private static final int THIRD1_Y = MAX_Y / 3;
   static final int THIRD2_Y = THIRD1_Y * 2;
   static final int THIRD3_Y = THIRD1_Y * 3;
 
@@ -54,10 +54,10 @@ public class Leveler {
     switch (level) {
       case 1:
         // gilbert
-        gilbs = new Gilbert(800, 600, -1, 0, 0, 0);
+        gilbs = new Gilbert(800, 600, -1, 0);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(640, 360, 1000f, 100f));
 
         // collectable
@@ -66,10 +66,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 2:
         // gilbert
-        gilbs = new Gilbert(620, 360, 1, 1, 0, 0);
+        gilbs = new Gilbert(620, 360, 1, 1);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(220, 360, 1000f, 100f));
         planetsArray.add(new Planet(1020, 360, 1000f, 100f));
 
@@ -79,10 +79,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 3:
         // gilbert
-        gilbs = new Gilbert(800, 600, -1, 0, 0, 0);
+        gilbs = new Gilbert(800, 600, -1, 0);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(800, 400, 1000f, 100f));
         planetsArray.add(new Planet(500, 300, 1000f, 100f));
 
@@ -92,10 +92,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 4:
         // gilbert
-        gilbs = new Gilbert(800, 600, 2, 0, 0, 0);
+        gilbs = new Gilbert(800, 600, 2, 0);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(900, 400, 1500f, 150f));
         planetsArray.add(new Planet(400, 200, 1000f, 100f));
 
@@ -106,10 +106,10 @@ public class Leveler {
 
       case 5:
         // gilbert
-        gilbs = new Gilbert(800, 600, 2, 0, 0, 0);
+        gilbs = new Gilbert(800, 600, 2, 0);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(350, 450, 1000f, 100f));
         planetsArray.add(new Planet(650, 350, 1500f, 150f));
         planetsArray.add(new Planet(950, 250, 1000f, 100f));
@@ -120,10 +120,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 6:
         // gilbert
-        gilbs = new Gilbert(800, 600, 2, 0, 0, 0);
+        gilbs = new Gilbert(800, 600, 2, 0);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(150, 150, 500f, 50f));
         planetsArray.add(new Planet(250, 350, 500f, 50f));
         planetsArray.add(new Planet(350, 250, 500f, 50f));
@@ -140,10 +140,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 7:
         // gilbert
-        gilbs = new Gilbert(MID_X + 150, MID_Y + 10, 2, 3, 0, 0);
+        gilbs = new Gilbert(MID_X + 150, MID_Y + 10, 2, 3);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
 
         for (float t = 0.0f; t < 2.0f * Math.PI; t += Math.PI * 0.25f) {
           planetsArray.add(new Planet((float) (MID_X + THIRD1_Y * Math.sin(t)),
@@ -160,10 +160,10 @@ public class Leveler {
         return new LevelState(gilbs, planetsArray, collect);
       case 8:
         // gilbert
-        gilbs = new Gilbert(800, 550, 2, 1, 0, 0);
+        gilbs = new Gilbert(800, 550, 2, 1);
 
         // planets array
-        planetsArray = new ArrayList<Planet>();
+        planetsArray = new ArrayList<>();
         planetsArray.add(new Planet(EIGHTH5_X, EIGHTH5_Y, 500f, 50f));
         planetsArray.add(new Planet(EIGHTH4_X, EIGHTH4_Y, 500f, 50f));
         planetsArray.add(new Planet(EIGHTH3_X, EIGHTH3_Y, 500f, 50f));

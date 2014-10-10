@@ -1,4 +1,4 @@
-package util;
+package util.text;
 
 import org.lwjgl.opengl.GL11;
 

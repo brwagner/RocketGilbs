@@ -38,7 +38,7 @@ public class Saver {
   public void load() {
     try {
       BufferedReader br = new BufferedReader(new FileReader("src/save.txt"));
-      String line = new String();
+      String line;
       while ((line = br.readLine()) != null) {
         if (line.equals("max")) {
           this.setMaxLevel(Integer.parseInt(br.readLine()));
@@ -56,7 +56,7 @@ public class Saver {
               new Vector2f(Float.parseFloat(br.readLine()), Float.parseFloat(br.readLine())));
         }
         if (line.equals("times")) {
-          this.setTimes(new ArrayList<Float>());
+          this.setTimes(new ArrayList<>());
           for (int i = 0; i < this.getMaxLevel(); i++) {
             br.readLine();
             this.getTimes().add(Float.parseFloat(br.readLine()));
@@ -74,15 +74,16 @@ public class Saver {
     try {
       BufferedWriter bw = new BufferedWriter(new FileWriter("src/save.txt"));
       StringBuilder file = new StringBuilder();
-      file.append("max\n" + this.getMaxLevel() + "\n");
-      file.append("current\n" + this.getCurrentLevel() + "\n");
-      file.append("settings\n" + this.getSettings() + "\n");
-      file.append("screen\n" + this.getScreen().x + "\n" + this.getScreen().y + "\n");
+      file.append("max\n").append(this.getMaxLevel()).append("\n");
+      file.append("current\n").append(this.getCurrentLevel()).append("\n");
+      file.append("settings\n").append(this.getSettings()).append("\n");
+      file.append("screen\n").append(this.getScreen().x).append("\n").append(this.getScreen().y)
+          .append("\n");
       file.append("times\n");
 
       for (int i = 0; i < this.getTimes().size(); i++) {
-        file.append("t" + i + "\n");
-        file.append(this.getTimes().get(i) + "\n");
+        file.append("t").append(i).append("\n");
+        file.append(this.getTimes().get(i)).append("\n");
       }
 
       bw.write(file.toString());

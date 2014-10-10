@@ -1,12 +1,16 @@
-package main;
+package main.menu;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.vector.Vector2f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import main.Game;
 import util.Saver;
-import util.SimpleText;
+import util.text.DrawableText;
+import util.text.ExpandyBehavior;
+import util.text.SimpleText;
 
 import static org.lwjgl.opengl.GL11.glColor3d;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
@@ -18,34 +22,48 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
  * The main menu. This class is a mess and really should use some kind of state machine instead of
  * what i'm doing now.
  */
-public class Menu {
+public class OldMenu {
 
-  ArrayList<String> currentOptions;
-  String[] menuOptions = {"Continue", "Level Select", "Settings"};
-  String[] settingsOptions = {"No Stars", "Some Stars", "More Stars", "Lots of Stars"};
-  String[] levelOptions;
-  float time;
-  int selected;
-  int menuState;
+  private ArrayList<String> currentOptions;
+  private String[] menuOptions = {"Continue", "Level Select", "Settings"};
+  private String[] settingsOptions = {"No Stars", "Some Stars", "More Stars", "Lots of Stars"};
+  private String[] levelOptions;
+  private float time;
+  private int selected;
+  private int menuState;
+  private DrawableText drawableText;
+  private DrawableText drawableText2;
 
-  public Menu() {
+
+  public OldMenu() {
     this.menuState = -1;
     this.selected = 0;
     this.time = 0;
-    this.currentOptions = new ArrayList<String>(Arrays.asList(this.menuOptions));
+    this.currentOptions = new ArrayList<>(Arrays.asList(this.menuOptions));
 
     this.levelOptions = new String[Saver.getInstance().getMaxLevel()];
     for (int i = 0; i < Saver.getInstance().getMaxLevel(); i++) {
       this.levelOptions[i] = "Level: " + Integer.valueOf(i + 1);
     }
+
+    drawableText = new DrawableText("RocketGilbs",
+                                    new Vector2f(
+                                        Game.getGameScreen().getX() / 2 - 300,
+                                        200),
+                                    5);
+
+    drawableText2 = new DrawableText("By Benjamin Rajs Wagner",
+                                     new Vector2f(
+                                         Game.getGameScreen().getX() / 2 - 600, 550),
+                                     4, new ExpandyBehavior());
   }
 
-  void update() {
+  public void update() {
     this.time += 1.0f / 60.0f;
 
     switch (this.menuState) {
       case -1:
-        this.currentOptions = new ArrayList<String>(Arrays.asList(this.menuOptions));
+        this.currentOptions = new ArrayList<>(Arrays.asList(this.menuOptions));
         if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
           this.menuState = this.selected;
           this.time = (float) Math.PI;
@@ -55,7 +73,7 @@ public class Menu {
       case 0:
         break;
       case 1:
-        this.currentOptions = new ArrayList<String>(Arrays.asList(this.levelOptions));
+        this.currentOptions = new ArrayList<>(Arrays.asList(this.levelOptions));
         if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
           this.menuState = 0;
           Saver.getInstance().setCurrentLevel(this.selected + 1);
@@ -65,7 +83,7 @@ public class Menu {
         }
         break;
       case 2:
-        this.currentOptions = new ArrayList<String>(Arrays.asList(this.settingsOptions));
+        this.currentOptions = new ArrayList<>(Arrays.asList(this.settingsOptions));
         if (Keyboard.isKeyDown(Keyboard.KEY_SPACE) && this.time > 3.5) {
           Saver.getInstance().setSettings(this.selected);
           Saver.getInstance().save();
@@ -107,12 +125,7 @@ public class Menu {
   }
 
   private void drawAScreen(String title, String[] strings, int select) {
-    glLoadIdentity();
-    glColor3d(1, 1, 1);
-    glTranslatef(Game.getGameScreen().getX() / 2 - 300, 200, 0.0f);
-    glScalef(5.0f, 5.0f, 0.0f);
-    glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-    SimpleText.drawString("RocketGilbs", 0, 0, 8);
+    drawableText.draw();
 
     for (int i = 0; i < strings.length; i++) {
       glLoadIdentity();
@@ -145,26 +158,28 @@ public class Menu {
     } else {
       glLoadIdentity();
       glColor3d(1, 1, 1);
+
       glTranslatef(Game.getGameScreen().getX() / 2 - 300, 200, 0.0f);
       glScalef(5.0f, 5.0f, 0.0f);
       glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
       SimpleText.drawString("RocketGilbs", 0, 0, (int) (Math.sin(this.time) * 11 + 9));
 
-      glLoadIdentity();
+      /*glLoadIdentity();
       glColor3d(1, 1, 1);
       glTranslatef(Game.getGameScreen().getX() / 2 - 600, 550, 0.0f);
       glScalef(4.0f, 4.0f, 0.0f);
       glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
-      SimpleText.drawString("By Benjamin Rajs Wagner", 0, 0, (int) (Math.sin(this.time) * 11 + 9));
+      SimpleText.drawString("By Benjamin Rajs Wagner", 0, 0, (int) (Math.sin(this.time) * 11 + 9));*/
+      drawableText2.draw();
+      drawableText2.update();
 
       glLoadIdentity();
       glColor3d(1, 1, 1);
       glTranslatef(Game.getGameScreen().getX() / 2 - 600, 650, 0.0f);
       glScalef(4.0f, 4.0f, 0.0f);
       glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-
       SimpleText.drawString("Music By Gilbert Yap", 0, 0, (int) (Math.sin(this.time) * 11 + 9));
 
       Game.drawBackground();
